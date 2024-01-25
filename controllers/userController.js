@@ -133,6 +133,12 @@ module.exports = {
         { runValidators: true, new: true }
       );
 
+      const friend = await User.findOneAndUpdate(
+        { _id: req.params.friendId },
+        { $pull: { friends:  req.params.userId } },
+        { runValidators: true, new: true }
+      );
+
       if (!user) {
         return res
           .status(404)
