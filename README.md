@@ -19,6 +19,7 @@ To test the api routes, type "npm install" to download the express and mongoose 
 then type "npm run dev" to start the local server.
 Use Insomnia to test apis.
 
+https://youtu.be/oL0Mmd2sO4I?si=08-1IGBtbetcp3PF
 ## License
 
 MIT License
