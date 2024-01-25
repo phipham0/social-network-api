@@ -1,28 +1,12 @@
-const { ObjectId } = require('mongoose').Types;
 const { Thought, User } = require('../models');
 
-// Aggregate function to get the number of students overall
+// Aggregate function to get the number of thoughts overall
 const headCount = async () => {
-  const numberOfStudents = await Thought.aggregate()
+  const numberOfThoughts = await Thought.aggregate()
     .count('thoughtCount');
-  return numberOfStudents;
+  return numberOfThoughts;
 }
 
-// // Aggregate function for getting the overall grade using $avg
-// const grade = async (studentId) =>
-//   Student.aggregate([
-//     // only include the given student by using $match
-//     { $match: { _id: new ObjectId(studentId) } },
-//     {
-//       $unwind: '$assignments',
-//     },
-//     {
-//       $group: {
-//         _id: new ObjectId(studentId),
-//         overallGrade: { $avg: '$assignments.score' },
-//       },
-//     },
-//   ]);
 
 module.exports = {
   // Get all thoughts
@@ -61,11 +45,44 @@ module.exports = {
   async createThought(req, res) {
     try {
       const thought = await Thought.create(req.body);
-      res.json(thought);
+      const user = await User.findOneAndUpdate(
+        { _id: req.body.userId },
+        { $addToSet: { thoughts: thought._id } },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: 'Thought created, but found no user with that ID',
+        });
+      }
+
+      res.json('Created the thought');
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
+  // Update a thought
+  async updateThought(req, res) {
+    try {
+      const thought = await Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $set: req.body },
+        { runValidators: true, new: true }
+      );
+
+      if (!thought) {
+        return res.status(404).json({ message: 'No thought with this id!' });
+      }
+
+      res.json(thought);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    }
+  },
+
   // Delete a thought and remove them from the course
   async deleteThought(req, res) {
     try {
@@ -75,13 +92,13 @@ module.exports = {
         return res.status(404).json({ message: 'No such thought exists' });
       }
 
-      const User = await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { thoughts: req.params.thoughtId },
         { $pull: { thoughts: req.params.thoughtId } },
         { new: true }
       );
 
-      if (!User) {
+      if (!user) {
         return res.status(404).json({
           message: 'Thought deleted, but no user found',
         });

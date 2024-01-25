@@ -1,6 +1,6 @@
-const { Schema, model } = require('mongoose');
+const { Schema, Types } = require('mongoose');
 
-// Schema to create a course model
+// Schema to create a Reaction subdoc
 const reactionSchema = new Schema(
   {
     reactionId: {
@@ -19,14 +19,11 @@ const reactionSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      get: (date) => timeSince(date),
+      get: (date) => {
+        if (date) return date.toDateString();
+      }
     },
-    students: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Student',
-      },
-    ],
+
   },
   {
     toJSON: {
